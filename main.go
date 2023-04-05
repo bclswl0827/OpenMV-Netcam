@@ -18,7 +18,7 @@ func main() {
 				log.Println(err)
 			},
 			OnDataCallback: func(b *Body) {
-				log.Println(len(b.Image))
+				log.Println("received ", len(b.Image))
 			},
 		}, &body)
 
