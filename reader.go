@@ -30,12 +30,13 @@ func CameraReader(port io.ReadWriteCloser, options CameraOptions, body *Body) er
 	}
 
 	if header.Size > 1000000 {
-		err := fmt.Errorf("incorrect packet length: %d", header.Size)
+		err := fmt.Errorf("invalid packet length: %d", header.Size)
 		options.OnErrorCallback(err)
 
 		return err
 	}
 
+	body.Ready = false
 	body.Image = make([]byte, header.Size)
 	_, err = io.ReadFull(port, body.Image)
 	if err != nil {
@@ -43,6 +44,7 @@ func CameraReader(port io.ReadWriteCloser, options CameraOptions, body *Body) er
 		return err
 	}
 
+	body.Ready = true
 	options.OnDataCallback(body)
 	return nil
 }

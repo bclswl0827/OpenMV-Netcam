@@ -5,6 +5,7 @@ type Args struct {
 }
 
 type Body struct {
+	Ready bool
 	Image []byte
 }
 
