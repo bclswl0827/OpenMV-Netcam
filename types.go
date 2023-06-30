@@ -8,12 +8,17 @@ type Body struct {
 	Image []byte
 }
 
+type Header struct {
+	Size uint32
+}
+
 type Config struct {
-	Listen string `json:"listen"`
-	Port   string `json:"port"`
-	Path   string `json:"path"`
-	Device string `json:"device"`
-	Baud   int    `json:"baud"`
+	Listen  string `json:"listen"`
+	Port    string `json:"port"`
+	Path    string `json:"path"`
+	Device  string `json:"device"`
+	Keyword string `json:"keyword"`
+	Baud    int    `json:"baud"`
 }
 
 type ServerOptions struct {
@@ -23,6 +28,7 @@ type ServerOptions struct {
 }
 
 type CameraOptions struct {
+	Keyword         string
 	OnErrorCallback func(error)
 	OnDataCallback  func(*Body)
 }

@@ -3,31 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
+	"time"
 )
 
 func CameraReader(port io.ReadWriteCloser, options CameraOptions, body *Body) error {
-	type Header struct {
-		Size uint32
-	}
-	var header Header
-
-	for {
-		frameHeader := make([]byte, 3)
-		_, err := port.Read(frameHeader)
-		if err != nil {
-			options.OnErrorCallback(err)
-			return err
-		}
-
-		if frameHeader[0] == 0x55 &&
-			frameHeader[1] == 0xAA &&
-			frameHeader[2] == 0x5A {
-			break
-		}
-	}
+	port.Write([]byte(options.Keyword))
 
 	size := make([]byte, 4)
 	n, err := io.ReadFull(port, size)
@@ -36,6 +18,7 @@ func CameraReader(port io.ReadWriteCloser, options CameraOptions, body *Body) er
 		return err
 	}
 
+	var header Header
 	err = binary.Read(
 		bytes.NewReader(size[:n]),
 		binary.LittleEndian,
@@ -47,16 +30,10 @@ func CameraReader(port io.ReadWriteCloser, options CameraOptions, body *Body) er
 	}
 
 	if header.Size > 1000000 {
-		options.OnErrorCallback(
-			errors.New(
-				"incorrect frame: " +
-					fmt.Sprintf("%d", header.Size),
-			),
-		)
-		return errors.New(
-			"incorrect frame: " +
-				fmt.Sprintf("%d", header.Size),
-		)
+		err := fmt.Errorf("incorrect packet length: %d", header.Size)
+		options.OnErrorCallback(err)
+
+		return err
 	}
 
 	body.Image = make([]byte, header.Size)
@@ -78,6 +55,7 @@ func ReaderDaemon(device string, baud int, options CameraOptions, body *Body) {
 		err := CameraReader(port, options, body)
 		if err != nil {
 			CloseCamera(port)
+			time.Sleep(10 * time.Millisecond)
 			port = OpenCamera(device, baud)
 
 			continue

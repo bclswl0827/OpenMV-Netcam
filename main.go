@@ -8,17 +8,18 @@ func main() {
 		body Body
 		args Args
 	)
-	args.ReadFlags()
-	conf.ReadConfig(args.Path)
+	args.Read()
+	conf.Read(args.Path)
 
 	go ReaderDaemon(
 		conf.Device, conf.Baud,
 		CameraOptions{
+			Keyword: conf.Keyword,
 			OnErrorCallback: func(err error) {
 				log.Println(err)
 			},
 			OnDataCallback: func(b *Body) {
-				log.Println("received ", len(b.Image))
+				log.Printf("received packet length: %d\n", len(b.Image))
 			},
 		}, &body)
 
