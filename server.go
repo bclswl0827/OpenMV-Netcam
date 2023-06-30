@@ -13,8 +13,8 @@ func StartServer(options ServerOptions, body *Body) {
 		writer := bufio.NewWriterSize(w, len(body.Image))
 
 		for {
-			fmt.Fprintf(writer, "--frame\nContent-Type: image/jpeg\nContent-Length: %d\n\n", len(body.Image))
 			if body.Ready {
+				fmt.Fprintf(writer, "--frame\nContent-Type: image/jpeg\nContent-Length: %d\n\n", len(body.Image))
 				writer.Write(body.Image)
 				writer.Flush()
 			}
