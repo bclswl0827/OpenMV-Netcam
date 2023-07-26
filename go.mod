@@ -1,4 +1,4 @@
-module camera
+module netcam
 
 go 1.19
 

@@ -1,3 +1,3 @@
-# Monitor
+# openmv-netcam-go 
 
-OpenMV 实现 MJPEG 监控摄像头方案
+由 OpenMV 实现的 MJPEG 监控摄像头方案

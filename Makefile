@@ -1,36 +1,32 @@
-.PHONY: build
+.PHONY: build clean version run windows
 
-BINARY=camera
-ARCH=`uname -m`
+BINARY=openmv-netcam
 
-build: armv7l aarch64 x86_64 i386 mipsle
+SRC_DIR=.
+DIST_DIR=./dist
+ASSETS_DIR=./assets
 
-armv7l:
-	@mkdir -p ./release/armv7l
-	@rm -rf  ./release/armv7l/*
-	@env GOOS=linux GOARCH=arm GOARM=7 go build -ldflags="-s -w" -o ./release/armv7l/${BINARY} *.go
-	@cp ./config.json ./release/armv7l
+BUILD_ARCH=arm arm64 386 amd64 ppc64le riscv64 \
+	mips mips64le mips64 mipsle loong64 s390x
+BUILD_FLAGS=-s -w
 
-aarch64:
-	@mkdir -p ./release/aarch64
-	@rm -rf  ./release/aarch64/*
-	@env GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ./release/aarch64/${BINARY} *.go
-	@cp ./config.json ./release/aarch64
+build: clean $(BUILD_ARCH)
+$(BUILD_ARCH):
+	@mkdir -p $(DIST_DIR)/$@
+	@rm -rf $(DIST_DIR)/$@/*
+	@GOOS=linux GOARCH=$@ go build -ldflags="$(BUILD_FLAGS)" \
+		-o $(DIST_DIR)/$@/$(BINARY) $(SRC_DIR)/*.go
+	@cp -r $(ASSETS_DIR) $(DIST_DIR)/$@
 
-x86_64:
-	@mkdir -p ./release/x86_64
-	@rm -rf  ./release/x86_64/*
-	@env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o ./release/x86_64/${BINARY} *.go
-	@cp ./config.json ./release/x86_64
+windows:
+	@mkdir -p $(DIST_DIR)/windows
+	@rm -rf $(DIST_DIR)/windows/*
+	@GOOS=windows GOARCH=amd64 go build -ldflags="$(BUILD_FLAGS)" \
+		-o $(DIST_DIR)/windows/$(BINARY).exe $(SRC_DIR)/*.go
+	@cp -r $(ASSETS_DIR) $(DIST_DIR)/windows
 
-i386:
-	@mkdir -p ./release/i386
-	@rm -rf  ./release/i386/*
-	@env GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o ./release/i386/${BINARY} *.go
-	@cp ./config.json ./release/i386
+run:
+	@go run $(SRC_DIR)/*.go --config $(ASSETS_DIR)/config.json
 
-mipsle:
-	@mkdir -p ./release/mipsle
-	@rm -rf  ./release/mipsle/*
-	@env GOOS=linux GOARCH=mipsle GOMIPS=softfloat go build -ldflags="-s -w" -o ./release/mipsle/${BINARY} *.go
-	@cp ./config.json ./release/mipsle
+clean:
+	@rm -rf $(DIST_DIR)
